@@ -79,6 +79,24 @@ class MultiHeadAttention(nn.Module):
 
         out = out.view(b,seq_len,self.num_heads * self.head_dim)
 
+class ResidualAdd(nn.Module):
+    def __init__(self,emb_size:int = 512) -> None:
+        super().__init__()
+        self.mha = MultiHeadAttention(emb_size = emb_size)
+    def forward(self,x):
+        return x + self.mha(x)
+    
+class MLP(nn.Module):
+    def __init__(self,emb_size:int = 512,expansion:int = 4,drop_out:float = 0.0):
+        super().__init__()
+        self.feed_forward = nn.Sequential(
+            nn.Linear(emb_size,expansion * emb_size),
+            nn.GELU(),
+            nn.Dropout(drop_out),
+            nn.Linear(expansion * emb_size,emb_size)
+        )
+    def forward(self,x):
+        return self.feed_forward(x)
 
 
 if __name__ == "__main__":
